@@ -1,24 +1,23 @@
 from flask import Flask, render_template, redirect, url_for, request, session
 import requests
-import os
-import json
 from bs4 import BeautifulSoup
-from serpapi import GoogleSearch
+import serpapi
 import random
 
 app = Flask(__name__)
 
 def get_google_search():
     imgs = []
-    url = "https://www.googleapis.com/customsearch/v1?key=AIzaSyDJSiDFD4sqNCFt680gAOsPfDbgI8Lxq9I&cx=0740ab079404c4f48&q=namjoon&searchType=image"
-    response = requests.get(url)
-    html = response.content
-    # Parse the HTML
-    soup = BeautifulSoup(html, "html.parser")
-    my_json = soup.decode('utf8').replace("'", '"')
-    data = json.loads(my_json)
-    for img in data["items"]:
-        imgs.append(img["link"])
+    params = {
+    "engine": "google",
+    "q": "namjoon",
+    "api_key": "280be8e2dc88b7f74ea5e1e4c2f24ec73b141a25c5a55810ae776172e141da06"
+    }
+    search = serpapi.search(params)
+    results = search.get_dict()
+    inline_images = results["inline_images"]
+    for img in inline_images:
+        imgs.append(img["image"])
     return imgs
 
 def duck_duck_go():
@@ -28,9 +27,8 @@ def duck_duck_go():
     "q": "namjoon",
     "api_key": "280be8e2dc88b7f74ea5e1e4c2f24ec73b141a25c5a55810ae776172e141da06"
     }
-    search = GoogleSearch(params)
-    results = search.get_dict()
-    inline_images = results["inline_images"]
+    search = serpapi.search(params)
+    inline_images = search["inline_images"]
     for img in inline_images:
         imgs.append(img["image"])
     return imgs
@@ -56,10 +54,10 @@ def kpopping():
 @app.route('/')
 def login():
     all_imgs = []
-    google = get_google_search()
+    # google = get_google_search()
     ddg = duck_duck_go()
     kpop = kpopping()
-    all_imgs.extend(google)
+    # all_imgs.extend(google)
     all_imgs.extend(ddg)
     all_imgs.extend(kpop)
     index = random.randint(0, len(all_imgs)-1)
